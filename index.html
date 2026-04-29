@@ -5,247 +5,155 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Wave360 Africa | Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        *{box-sizing:border-box;margin:0;padding:0}
-        :root{
-            --bg:#0d0d0f;--bg2:#141418;--bg3:#1c1c22;--bg4:#242430;
-            --border:#2a2a35;--border2:#35354a;
-            --text:#f0f0f5;--text2:#9090a8;--text3:#5a5a72;
-            --red:#E8302A;--orange:#F47B20;--yellow:#F9B200;
-            --purple:#7B3FA0;--pink:#C4205A;--green:#1D9E75;
+        :root {
+            --bg: #0d0d0f; --bg2: #141418; --bg3: #1c1c22; --border: #2a2a35;
+            --text: #f0f0f5; --text2: #9090a8; --orange: #F47B20; --green: #1D9E75;
         }
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; }
         
-        /* Layout */
-        .app-container { display: flex; min-height: 100vh; }
+        /* Original Sidebar Layout */
         .sidebar { width: 260px; background: var(--bg2); border-right: 1px solid var(--border); padding: 2rem; }
-        .main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .main { flex: 1; padding: 2rem; overflow-y: auto; }
         
-        /* Header & Stats */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
         .stat-card { background: var(--bg2); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); }
-        .stat-val { font-size: 1.8rem; font-weight: bold; margin-top: 0.5rem; color: var(--orange); }
+        .stat-val { font-size: 1.8rem; font-weight: bold; color: var(--orange); margin-top: 5px; }
 
-        /* Task Components */
-        .dept-section { margin-bottom: 3rem; }
-        .dept-title { font-size: 1.2rem; color: var(--text2); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; border-left: 4px solid var(--purple); padding-left: 10px; }
-        .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
-        .task-card { background: var(--bg3); padding: 1.2rem; border-radius: 10px; border: 1px solid var(--border); transition: 0.2s; position: relative; }
-        .task-card:hover { border-color: var(--text3); }
-        .task-card.is-done { opacity: 0.6; border-color: var(--green); }
+        .dept-title { color: var(--text2); text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; margin: 2rem 0 1rem; border-left: 3px solid #7B3FA0; padding-left: 10px; }
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
         
-        .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
-        .task-title { font-weight: 500; font-size: 1rem; }
+        .task-card { background: var(--bg3); padding: 1.2rem; border-radius: 10px; border: 1px solid var(--border); transition: 0.3s; }
+        .task-card.is-done { border-color: var(--green); opacity: 0.7; }
         
-        /* Custom Checkbox */
-        .cb-container { cursor: pointer; display: block; width: 24px; height: 24px; }
-        
-        /* Sync Indicator */
-        #sync-status { font-size: 12px; color: var(--text3); float: right; }
-        .syncing { color: var(--green) !important; font-weight: bold; }
+        .task-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .progress-bar { height: 4px; background: #242430; border-radius: 2px; }
+        .progress-fill { height: 100%; background: var(--orange); transition: width 0.4s; }
+
+        #sync-status { font-size: 11px; color: var(--text2); }
+        .syncing { color: var(--green); }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <aside class="sidebar">
-            <h2 style="color:var(--orange); margin-bottom: 2rem;">Wave360</h2>
-            <nav>
-                <div style="color:var(--text3); margin-bottom: 10px; font-size: 12px;">MAIN MENU</div>
-                <div style="padding: 10px 0; color: var(--text);">Dashboard</div>
-                <div style="padding: 10px 0; color: var(--text2);">Analytics</div>
-            </nav>
-        </aside>
+    <aside class="sidebar">
+        <h2 style="color:var(--orange)">Wave360</h2>
+        <p style="color:var(--text2); font-size: 12px; margin-top: 2rem;">MAIN MENU</p>
+        <p style="margin-top: 1rem;">Dashboard</p>
+    </aside>
 
-        <main class="main-content">
-            <header class="header">
-                <div>
-                    <h1>Operational Intelligence</h1>
-                    <p style="color:var(--text2)">Real-time task synchronization</p>
-                </div>
-                <div id="sync-status">Connected</div>
-            </header>
-
-            <div class="stat-grid" id="stats-summary">
-                </div>
-
-            <div id="dashboard-content">
-                <p style="color:var(--text3)">Initializing data stream...</p>
+    <main class="main">
+        <div class="header">
+            <div>
+                <h1 style="margin:0">Operational Intelligence</h1>
+                <p style="color:var(--text2); margin:5px 0 0">Real-time task synchronization</p>
             </div>
-        </main>
-    </div>
+            <div id="sync-status">Connected</div>
+        </div>
+
+        <div class="stat-grid" id="stats"></div>
+        <div id="dashboard-content">Initializing...</div>
+    </main>
 
     <script>
-        // ==============================
-        // CONFIG & INITIALIZATION
-        // ==============================
-        const sb = supabase.createClient('https://cupmhvdqyramhedkyjig.supabase.co', 'sb_publishable_aZyCQwd3UF8CPHitOZDgtg_ZzH0lI5P');
+        // Replace with your actual credentials
+        const sb = supabase.createClient('https://cupmhvdqyramhedkyjig.supabase.co', 'YOUR_ANON_KEY');
 
         let T = {}; 
         let lastSync = new Date(0).toISOString();
         let isSyncing = false;
 
-        // ==============================
-        // CORE ENGINE
-        // ==============================
-
         async function init() {
             try {
                 const { data, error } = await sb.from("tasks").select("*");
                 if (error) throw error;
-
-                T = {};
-                data.forEach(task => {
-                    const dept = task.department || "General";
-                    if (!T[dept]) T[dept] = [];
-                    T[dept].push(task);
-                });
-
+                processData(data);
                 lastSync = new Date().toISOString();
                 rPage();
             } catch (err) {
-                console.error("Init Error:", err);
-                document.getElementById('dashboard-content').innerHTML = `<p style="color:var(--red)">Failed to load data. Check console.</p>`;
+                document.getElementById('dashboard-content').innerHTML = "Check Supabase Column Names";
             }
+        }
+
+        function processData(data) {
+            T = {};
+            data.forEach(t => {
+                const d = t.department || "General";
+                if (!T[d]) T[d] = [];
+                T[d].push(t);
+            });
         }
 
         async function syncDB() {
             if (isSyncing) return;
             isSyncing = true;
-            const statusEl = document.getElementById('sync-status');
-            statusEl.classList.add('syncing');
-            statusEl.innerText = "Syncing...";
-
+            document.getElementById('sync-status').innerText = "Syncing...";
             try {
-                const { data, error } = await sb
-                    .from("tasks")
-                    .select("*")
-                    .gt("updated_at", lastSync);
-
-                if (error) throw error;
-
-                if (data && data.length) {
+                const { data, error } = await sb.from("tasks").select("*").gt("updated_at", lastSync);
+                if (!error && data.length) {
                     data.forEach(task => {
-                        const dept = task.department || "General";
-                        if (!T[dept]) T[dept] = [];
-
-                        const existingIdx = T[dept].findIndex(t => t.id === task.id);
-                        if (existingIdx > -1) {
-                            T[dept][existingIdx] = task;
-                        } else {
-                            T[dept].push(task);
+                        for (let d in T) {
+                            let i = T[d].findIndex(ex => ex.id === task.id);
+                            if (i > -1) T[d][i] = task;
                         }
                     });
                     lastSync = new Date().toISOString();
                     rPage();
                 }
-            } catch (err) {
-                console.error("Sync Error:", err);
             } finally {
                 isSyncing = false;
-                setTimeout(() => {
-                    statusEl.classList.remove('syncing');
-                    statusEl.innerText = "Connected";
-                }, 500);
+                document.getElementById('sync-status').innerText = "Connected";
             }
         }
 
-        async function updateTask(taskId, updates) {
-            let task = null;
-            let deptName = null;
-
+        async function updateTask(id, updates) {
+            // Find in local state
+            let task;
             for (let d in T) {
-                task = T[d].find(t => t.id === taskId);
-                if (task) { deptName = d; break; }
+                task = T[d].find(t => t.id === id);
+                if (task) break;
             }
-
             if (!task) return;
 
-            // OPTIMISTIC UPDATE
-            const prev = { ...task };
+            // Optimistic Update
             Object.assign(task, updates);
-            rPage(); // Redraw UI instantly
+            rPage();
 
-            try {
-                const { error } = await sb
-                    .from("tasks")
-                    .update(updates)
-                    .eq("id", taskId);
-
-                if (error) throw error;
-            } catch (err) {
-                console.error("Update failed, rolling back:", err);
-                Object.assign(task, prev); // Rollback
-                rPage();
-            }
+            await sb.from("tasks").update(updates).eq("id", id);
         }
 
-        // ==============================
-        // UI RENDERING
-        // ==============================
-
         function rPage() {
-            const container = document.getElementById('dashboard-content');
-            const statsContainer = document.getElementById('stats-summary');
-            if (!container) return;
-
             let html = '';
-            let totalTasks = 0;
-            let completedTasks = 0;
+            let total = 0, done = 0;
 
             for (let dept in T) {
-                const deptTasks = T[dept];
-                totalTasks += deptTasks.length;
-                completedTasks += deptTasks.filter(t => t.done).length;
-
-                html += `
-                    <section class="dept-section">
-                        <h2 class="dept-title">${dept}</h2>
-                        <div class="task-grid">
-                            ${deptTasks.map(task => `
-                                <div class="task-card ${task.done ? 'is-done' : ''}">
-                                    <div class="task-header">
-                                        <span class="task-title">${task.title}</span>
-                                        <input type="checkbox" class="cb-container" 
-                                            ${task.done ? 'checked' : ''} 
-                                            onchange="updateTask('${task.id}', { done: this.checked })">
-                                    </div>
-                                    <div style="height:4px; background:var(--bg4); border-radius:2px; overflow:hidden;">
-                                        <div style="width:${task.progress || 0}%; height:100%; background:var(--orange);"></div>
-                                    </div>
-                                    <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:var(--text3)">
-                                        <span>Progress</span>
-                                        <span>${task.progress || 0}%</span>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </section>
-                `;
+                html += `<div class="dept-title">${dept}</div><div class="task-grid">`;
+                T[dept].forEach(t => {
+                    total++; if(t.done) done++;
+                    html += `
+                        <div class="task-card ${t.done ? 'is-done' : ''}">
+                            <div class="task-top">
+                                <span>${t.title}</span>
+                                <input type="checkbox" ${t.done ? 'checked' : ''} 
+                                    onchange="updateTask('${t.id}', {done: this.checked})">
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:${t.progress}%"></div></div>
+                        </div>`;
+                });
+                html += `</div>`;
             }
 
-            container.innerHTML = html || '<p style="color:var(--text3)">No tasks found.</p>';
-            
-            // Update Stats
-            const efficiency = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            statsContainer.innerHTML = `
-                <div class="stat-card"><div>Total Tasks</div><div class="stat-val">${totalTasks}</div></div>
-                <div class="stat-card"><div>Completed</div><div class="stat-val" style="color:var(--green)">${completedTasks}</div></div>
-                <div class="stat-card"><div>Efficiency</div><div class="stat-val" style="color:var(--purple)">${efficiency}%</div></div>
+            document.getElementById('dashboard-content').innerHTML = html;
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card">Total Tasks<div class="stat-val">${total}</div></div>
+                <div class="stat-card">Completed<div class="stat-val">${done}</div></div>
+                <div class="stat-card">Efficiency<div class="stat-val">${total ? Math.round(done/total*100) : 0}%</div></div>
             `;
         }
 
-        // ==============================
-        // LIFECYCLE
-        // ==============================
-        
         setInterval(syncDB, 4000);
-        document.addEventListener("visibilitychange", () => { if (!document.hidden) syncDB(); });
-        
         init();
-
     </script>
 </body>
 </html>
