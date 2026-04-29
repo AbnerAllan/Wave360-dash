@@ -3,62 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Wave360 Africa | Dashboard</title>
+    <title>Wave360 Africa | Operational Intelligence</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg: #0d0d0f; --bg2: #141418; --bg3: #1c1c22; --border: #2a2a35;
-            --text: #f0f0f5; --text2: #9090a8; --orange: #F47B20; --green: #1D9E75;
+            --text: #f0f0f5; --text2: #9090a8; --orange: #F47B20; --green: #1D9E75; --purple: #7B3FA0;
         }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Original Sidebar Layout */
-        .sidebar { width: 260px; background: var(--bg2); border-right: 1px solid var(--border); padding: 2rem; }
-        .main { flex: 1; padding: 2rem; overflow-y: auto; }
+        .sidebar { width: 260px; background: var(--bg2); border-right: 1px solid var(--border); padding: 2rem; display: flex; flex-direction: column; }
+        .main { flex: 1; padding: 2rem; overflow-y: auto; position: relative; }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
         .stat-card { background: var(--bg2); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); }
-        .stat-val { font-size: 1.8rem; font-weight: bold; color: var(--orange); margin-top: 5px; }
+        .stat-val { font-size: 2rem; font-weight: 800; color: var(--orange); margin-top: 5px; }
 
-        .dept-title { color: var(--text2); text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; margin: 2rem 0 1rem; border-left: 3px solid #7B3FA0; padding-left: 10px; }
-        .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .dept-title { color: var(--text2); text-transform: uppercase; font-weight: 700; font-size: 0.8rem; margin: 2.5rem 0 1rem; border-left: 4px solid var(--purple); padding-left: 12px; }
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
         
-        .task-card { background: var(--bg3); padding: 1.2rem; border-radius: 10px; border: 1px solid var(--border); transition: 0.3s; }
-        .task-card.is-done { border-color: var(--green); opacity: 0.7; }
+        .task-card { background: var(--bg2); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border); transition: all 0.3s ease; position: relative; }
+        .task-card.is-done { border-color: var(--green); background: rgba(29, 158, 117, 0.05); }
         
-        .task-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        .progress-bar { height: 4px; background: #242430; border-radius: 2px; }
-        .progress-fill { height: 100%; background: var(--orange); transition: width 0.4s; }
+        .task-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .task-title { font-weight: 500; font-size: 1rem; line-height: 1.4; padding-right: 10px; }
+        .assignee-tag { font-size: 0.7rem; color: var(--purple); background: rgba(123, 63, 160, 0.1); padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
+        
+        .progress-container { margin-top: 15px; }
+        .progress-bar { height: 6px; background: #242430; border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--orange), #ff4d00); transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        #sync-status { font-size: 11px; color: var(--text2); }
-        .syncing { color: var(--green); }
+        #sync-indicator { font-size: 12px; display: flex; align-items: center; gap: 6px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+        .is-syncing .dot { background: var(--orange); animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        
+        input[type="checkbox"] { cursor: pointer; width: 18px; height: 18px; accent-color: var(--green); }
     </style>
 </head>
 <body>
 
     <aside class="sidebar">
-        <h2 style="color:var(--orange)">Wave360</h2>
-        <p style="color:var(--text2); font-size: 12px; margin-top: 2rem;">MAIN MENU</p>
-        <p style="margin-top: 1rem;">Dashboard</p>
+        <h2 style="color:var(--orange); letter-spacing: -1px; margin-bottom: 3rem;">WAVE360</h2>
+        <nav>
+            <div style="color:var(--orange); font-weight: 600; padding: 10px 0; border-bottom: 1px solid var(--border)">Dashboard</div>
+            <div style="color:var(--text2); padding: 10px 0; opacity: 0.5;">Analytics (Locked)</div>
+        </nav>
     </aside>
 
     <main class="main">
         <div class="header">
             <div>
-                <h1 style="margin:0">Operational Intelligence</h1>
-                <p style="color:var(--text2); margin:5px 0 0">Real-time task synchronization</p>
+                <h1 style="margin:0; font-size: 1.8rem;">Operational Intelligence</h1>
+                <p style="color:var(--text2); margin:4px 0 0">Live Monitoring & Performance Tracking</p>
             </div>
-            <div id="sync-status">Connected</div>
+            <div id="sync-indicator"><div class="dot"></div> <span id="sync-text">Connected</span></div>
         </div>
 
         <div class="stat-grid" id="stats"></div>
-        <div id="dashboard-content">Initializing...</div>
+        <div id="dashboard-content">
+            <p style="color:var(--text2)">Syncing with Wave360 Database...</p>
+        </div>
     </main>
 
     <script>
-        // Replace with your actual credentials
-        const sb = supabase.createClient('https://cupmhvdqyramhedkyjig.supabase.co', 'YOUR_ANON_KEY');
+        const sb = supabase.createClient('https://cupmhvdqyramhedkyjig.supabase.co', 'sb_publishable_aZyCQwd3UF8CPHitOZDgtg_ZzH0lI5P');
 
         let T = {}; 
         let lastSync = new Date(0).toISOString();
@@ -72,14 +83,15 @@
                 lastSync = new Date().toISOString();
                 rPage();
             } catch (err) {
-                document.getElementById('dashboard-content').innerHTML = "Check Supabase Column Names";
+                console.error(err);
+                document.getElementById('dashboard-content').innerHTML = `<p style="color:red">Connection Error: Ensure columns 'title', 'done', 'progress' exist in Supabase.</p>`;
             }
         }
 
         function processData(data) {
             T = {};
             data.forEach(t => {
-                const d = t.department || "General";
+                const d = t.department || "Operations";
                 if (!T[d]) T[d] = [];
                 T[d].push(t);
             });
@@ -88,10 +100,12 @@
         async function syncDB() {
             if (isSyncing) return;
             isSyncing = true;
-            document.getElementById('sync-status').innerText = "Syncing...";
+            document.getElementById('sync-indicator').classList.add('is-syncing');
+            document.getElementById('sync-text').innerText = "Updating...";
+            
             try {
                 const { data, error } = await sb.from("tasks").select("*").gt("updated_at", lastSync);
-                if (!error && data.length) {
+                if (!error && data && data.length > 0) {
                     data.forEach(task => {
                         for (let d in T) {
                             let i = T[d].findIndex(ex => ex.id === task.id);
@@ -102,13 +116,15 @@
                     rPage();
                 }
             } finally {
-                isSyncing = false;
-                document.getElementById('sync-status').innerText = "Connected";
+                setTimeout(() => {
+                    isSyncing = false;
+                    document.getElementById('sync-indicator').classList.remove('is-syncing');
+                    document.getElementById('sync-text').innerText = "Connected";
+                }, 500);
             }
         }
 
         async function updateTask(id, updates) {
-            // Find in local state
             let task;
             for (let d in T) {
                 task = T[d].find(t => t.id === id);
@@ -116,39 +132,51 @@
             }
             if (!task) return;
 
-            // Optimistic Update
+            // Optimistic Local Update
             Object.assign(task, updates);
             rPage();
 
-            await sb.from("tasks").update(updates).eq("id", id);
+            // Background Push to Supabase
+            const { error } = await sb.from("tasks").update(updates).eq("id", id);
+            if (error) console.error("Update failed:", error);
         }
 
         function rPage() {
             let html = '';
-            let total = 0, done = 0;
+            let total = 0, doneCount = 0;
 
             for (let dept in T) {
                 html += `<div class="dept-title">${dept}</div><div class="task-grid">`;
                 T[dept].forEach(t => {
-                    total++; if(t.done) done++;
+                    total++; 
+                    if(t.done) doneCount++;
                     html += `
                         <div class="task-card ${t.done ? 'is-done' : ''}">
                             <div class="task-top">
-                                <span>${t.title}</span>
+                                <div class="task-title">${t.title || 'Untitled Task'}</div>
                                 <input type="checkbox" ${t.done ? 'checked' : ''} 
                                     onchange="updateTask('${t.id}', {done: this.checked})">
                             </div>
-                            <div class="progress-bar"><div class="progress-fill" style="width:${t.progress}%"></div></div>
+                            <div class="assignee-tag">${t.assignee || 'Unassigned'}</div>
+                            <div class="progress-container">
+                                <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:5px; color:var(--text2)">
+                                    <span>Progress</span>
+                                    <span>${t.progress || 0}%</span>
+                                </div>
+                                <div class="progress-bar"><div class="progress-fill" style="width:${t.progress || 0}%"></div></div>
+                            </div>
                         </div>`;
                 });
                 html += `</div>`;
             }
 
-            document.getElementById('dashboard-content').innerHTML = html;
+            document.getElementById('dashboard-content').innerHTML = html || '<p>No tasks found in database.</p>';
+            
+            const efficiency = total ? Math.round((doneCount / total) * 100) : 0;
             document.getElementById('stats').innerHTML = `
-                <div class="stat-card">Total Tasks<div class="stat-val">${total}</div></div>
-                <div class="stat-card">Completed<div class="stat-val">${done}</div></div>
-                <div class="stat-card">Efficiency<div class="stat-val">${total ? Math.round(done/total*100) : 0}%</div></div>
+                <div class="stat-card">Network Tasks<div class="stat-val">${total}</div></div>
+                <div class="stat-card">Completed<div class="stat-val">${doneCount}</div></div>
+                <div class="stat-card">Efficiency<div class="stat-val">${efficiency}%</div></div>
             `;
         }
 
